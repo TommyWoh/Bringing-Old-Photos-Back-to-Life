@@ -301,7 +301,7 @@ class UnetSkipConnectionBlock(nn.Module):
 if __name__ == "__main__":
     from torchsummary import summary
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("mps" if torch.mps.is_available() else "cpu")
 
     model = UNet_two_decoders(
         in_channels=3,

@@ -84,8 +84,9 @@ def prepare_device(use_gpu, gpu_ids):
             device = torch.device("cuda:" + str(gpu_ids))
         print("running on GPU {}".format(gpu_ids))
     else:
-        device = torch.device("cpu")
-        print("running on CPU")
+        device_name = "mps" if torch.mps.is_available() else "cpu"
+        device = torch.device(device_name)
+        print(f"running on {device_name}")
 
     return device
 
@@ -177,7 +178,6 @@ def tb_image_logger(tb_writer, iter_index, images_info, config):
 
 
 def tb_image_logger_test(epoch, iter, images_info, config):
-
     url = os.path.join(config.output_dir, config.name, config.train_mode, "val_" + str(epoch))
     if not os.path.exists(url):
         os.makedirs(url)
@@ -218,9 +218,7 @@ def vgg_preprocess(tensor):
     # output is BGR tensor which ranges in [0,255]
     tensor_bgr = torch.cat((tensor[:, 2:3, :, :], tensor[:, 1:2, :, :], tensor[:, 0:1, :, :]), dim=1)
     # tensor_bgr = tensor[:, [2, 1, 0], ...]
-    tensor_bgr_ml = tensor_bgr - torch.Tensor([0.40760392, 0.45795686, 0.48501961]).type_as(tensor_bgr).view(
-        1, 3, 1, 1
-    )
+    tensor_bgr_ml = tensor_bgr - torch.Tensor([0.40760392, 0.45795686, 0.48501961]).type_as(tensor_bgr).view(1, 3, 1, 1)
     tensor_rst = tensor_bgr_ml * 255
     return tensor_rst
 

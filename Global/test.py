@@ -3,20 +3,21 @@
 
 import os
 from collections import OrderedDict
-from torch.autograd import Variable
-from options.test_options import TestOptions
-from models.models import create_model
-from models.mapping_model import Pix2PixHDModel_Mapping
-import util.util as util
-from PIL import Image
-import torch
-import torchvision.utils as vutils
-import torchvision.transforms as transforms
-import numpy as np
+
 import cv2
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+import torchvision.utils as vutils
+import util.util as util
+from models.mapping_model import Pix2PixHDModel_Mapping
+from models.models import create_model
+from options.test_options import TestOptions
+from PIL import Image
+from torch.autograd import Variable
+
 
 def data_transforms(img, method=Image.BILINEAR, scale=False):
-
     ow, oh = img.size
     pw, ph = ow, oh
     if scale == True:
@@ -45,7 +46,6 @@ def data_transforms_rgb_old(img):
 
 
 def irregular_hole_synthesize(img, mask):
-
     img_np = np.array(img).astype("uint8")
     mask_np = np.array(mask).astype("uint8")
     mask_np = mask_np / 255
@@ -93,7 +93,6 @@ def parameter_set(opt):
 
 
 if __name__ == "__main__":
-
     opt = TestOptions().parse(save=False)
     parameter_set(opt)
 
@@ -120,30 +119,27 @@ if __name__ == "__main__":
         dataset_size = len(os.listdir(opt.test_mask))
         mask_loader.sort()
 
-    img_transform = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
+    img_transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
     mask_transform = transforms.ToTensor()
-
+    ext = ["jpg", "png", "gif", "tiff"]
     for i in range(dataset_size):
-
         input_name = input_loader[i]
-        input_file = os.path.join(opt.test_input, input_name)
-        if not os.path.isfile(input_file):
-            print("Skipping non-file %s" % input_name)
-            continue
-        input = Image.open(input_file).convert("RGB")
-
-        print("Now you are processing %s" % (input_name))
+        if input_name[-3:] in ext:
+            input_file = os.path.join(opt.test_input, input_name)
+            if not os.path.isfile(input_file):
+                print("Skipping non-file %s" % input_name)
+                continue
+            input = Image.open(input_file).convert("RGB")
+            print("Now you are processing %s" % (input_name))
 
         if opt.NL_use_mask:
             mask_name = mask_loader[i]
             mask = Image.open(os.path.join(opt.test_mask, mask_name)).convert("RGB")
             if opt.mask_dilation != 0:
-                kernel = np.ones((3,3),np.uint8)
+                kernel = np.ones((3, 3), np.uint8)
                 mask = np.array(mask)
-                mask = cv2.dilate(mask,kernel,iterations = opt.mask_dilation)
-                mask = Image.fromarray(mask.astype('uint8'))
+                mask = cv2.dilate(mask, kernel, iterations=opt.mask_dilation)
+                mask = Image.fromarray(mask.astype("uint8"))
             origin = input
             input = irregular_hole_synthesize(input, mask)
             mask = mask_transform(mask)

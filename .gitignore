@@ -1,4 +1,10 @@
 __pycache__/
 *.pyc
 *~
-
+*.dat
+*.pth
+# downloaded elements
+Face_Enhancement/models
+Global/checkpoints/
+Global/detection_models/sync_batchnorm/
+Global/detection_models/Synchronized-BatchNorm-PyTorch/
